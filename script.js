@@ -2,8 +2,8 @@
 // IMPORTANT: create 2 NEW conversion actions for Aqua Vista in Google Ads and paste their labels below
 // (kept separate from other projects so reporting stays clean)
 var AW_ID = 'AW-18582289500';
-var CONV_WHATSAPP = 'REPLACE_AQUAVISTA_WHATSAPP_LABEL'; // every wa.me button + both forms
-var CONV_CALL     = 'REPLACE_AQUAVISTA_CALL_LABEL';     // every tel: button (floating call + sticky bar)
+var CONV_WHATSAPP = 'OKP1CKTUzcAdENz43JxF'; // every wa.me button + both forms
+var CONV_CALL     = 'SmCRCKfUzcAdENz43JxF';     // every tel: button (floating call + sticky bar)
 function trackConv(label) {
   if (typeof gtag !== 'function' || !label || label.indexOf('REPLACE_') === 0) return;
   gtag('event', 'conversion', { 'send_to': AW_ID + '/' + label });
