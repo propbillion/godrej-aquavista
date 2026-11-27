@@ -5910,7 +5910,7 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
   -webkit-backdrop-filter: blur(3px);
   opacity: 0;
   visibility: hidden;
-  transition: opacity .35s var(--ease), visibility .35s;
+  transition: opacity .2s var(--ease), visibility .2s;
   pointer-events: none;
 }
 .ln-overlay.show {
@@ -5931,7 +5931,7 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
   text-align: center;
   transform: scale(0.9) translateY(14px);
   opacity: 0;
-  transition: transform .4s var(--ease), opacity .35s var(--ease);
+  transition: transform .25s var(--ease), opacity .2s var(--ease);
 }
 .ln-overlay.show .launch-nudge {
   transform: scale(1) translateY(0);
@@ -6198,3 +6198,307 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 /* ============================ GATED IMAGE BLUR (+12%) ============================
    Teaser floor-plan/unit images were blurred at 3px - bumped ~12% per request. */
 .gated > img { filter: blur(3.4px) saturate(1.02) !important; }
+
+/* ===================== INVENTORY LEFT + SCARCITY BARS ===================== */
+.inv-left {
+  display: inline-block;
+  font-size: 0.82em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: #C2410C;
+  white-space: nowrap;
+}
+.hero .inv-left, .hf-trust .inv-left { color: #FDBA74; }
+
+.inv-bar { margin: 0.85rem 0 0.35rem; text-align: left; }
+.inv-bar-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11.5px; line-height: 1.2; margin-bottom: 6px;
+}
+.inv-bar-lbl { font-weight: 700; color: #0B1E36; letter-spacing: 0.02em; }
+.inv-bar-left { color: #C2410C; font-weight: 600; }
+.inv-bar-left strong { font-weight: 800; }
+.inv-bar-track {
+  position: relative; height: 8px; border-radius: 999px;
+  background: rgba(22, 66, 115, 0.12); overflow: hidden;
+}
+.inv-bar-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #F59E0B 0%, #F97316 100%);
+  transition: width 1.6s cubic-bezier(.22,.8,.24,1);
+}
+.inv-bar-fill::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  transform: translateX(-100%);
+  animation: invSheen 2.6s ease-in-out 1.8s infinite;
+}
+@keyframes invSheen { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .inv-bar-fill { transition: none; }
+  .inv-bar-fill::after { animation: none; }
+}
+
+/* 1 BHK direct price */
+.pc-pair-direct .pp-direct {
+  font-size: 1.25em; font-weight: 800; color: #164273; letter-spacing: 0.01em;
+}
+
+.pc-type .inv-left { font-size: 1.05em; letter-spacing: 0.04em; margin-left: 2px; }
+
+/* =====================================================================
+   GLASS BUTTON SYSTEM (universal) - v1
+   Reference: the hero "Download Brochure / Get Floor Plans / Book Site
+   Visit" pills. Every CTA on the page now speaks this one language:
+   pill shape, translucent surface, hairline border, backdrop blur,
+   a soft top highlight and a quiet drop shadow.
+   Three tints, chosen by context + importance (not new styles):
+     1. Primary on light  -> deep brand-tinted glass, white text
+     2. Secondary on light -> clear glass, brand text
+     3. Any on dark       -> frosted white glass, white text
+        (primary on dark gets a light-cyan tint so it still leads)
+   This block sits last and overrides older size/shine/glow rules.
+   ===================================================================== */
+:root {
+  --g-radius: 9999px;
+  --g-blur: blur(12px) saturate(150%);
+  --g-pad: 0.88rem 1.55rem;
+  --g-font: 15px;
+  --g-minh: 50px;
+  --g-hl: inset 0 1px 0 rgba(255,255,255,0.45);
+}
+
+.btn, .btn-brand, .btn-ink, .btn-ghost, .btn-outline-light,
+.btn-glass-brand, .btn-glass-light, .btn-sm, .pay-cta, .btn.tk-cta,
+.btn.cab-btn, .hf-submit, .hsc-link, .tk-unlock, .ln-cta, .header-cta {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5em;
+  border-radius: var(--g-radius) !important;
+  padding: var(--g-pad) !important;
+  min-height: var(--g-minh);
+  max-width: 100%;
+  font-size: var(--g-font) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.2 !important;
+  text-align: center;
+  white-space: normal;
+  text-decoration: none !important;
+  -webkit-backdrop-filter: var(--g-blur);
+  backdrop-filter: var(--g-blur);
+  position: relative;
+  overflow: hidden;
+  animation: none !important;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .25s ease,
+              background .25s ease, border-color .25s ease, color .2s ease !important;
+}
+.btn > span, .pay-cta > span, .tk-unlock > span, .hf-submit > span, .ln-cta > span { position: relative; z-index: 2; }
+
+/* 1 - PRIMARY ON LIGHT: brand-tinted glass */
+.btn-glass-brand, .btn-brand, .btn-ink, .ln-cta {
+  background: linear-gradient(180deg, rgba(36,104,168,0.92) 0%, rgba(22,66,115,0.94) 100%) !important;
+  border: 1px solid rgba(143,211,238,0.55) !important;
+  color: #ffffff !important;
+  box-shadow: var(--g-hl), 0 10px 24px -12px rgba(22,66,115,0.55) !important;
+}
+.btn-glass-brand:hover, .btn-brand:hover, .btn-ink:hover, .ln-cta:hover {
+  background: linear-gradient(180deg, rgba(44,120,190,0.95) 0%, rgba(26,76,133,0.96) 100%) !important;
+  box-shadow: var(--g-hl), 0 14px 30px -12px rgba(22,66,115,0.65) !important;
+  transform: translateY(-1px);
+}
+
+/* 2 - SECONDARY ON LIGHT: clear glass */
+.btn-glass-light, .btn-ghost, .btn-outline-light, .header-cta {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(230,242,250,0.65) 100%) !important;
+  border: 1px solid rgba(22,66,115,0.22) !important;
+  color: #164273 !important;
+  box-shadow: var(--g-hl), 0 8px 20px -14px rgba(22,66,115,0.45) !important;
+}
+.btn-glass-light:hover, .btn-ghost:hover, .btn-outline-light:hover, .header-cta:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(214,234,247,0.8) 100%) !important;
+  border-color: rgba(30,111,168,0.45) !important;
+  color: #0B1E36 !important;
+  transform: translateY(-1px);
+}
+
+/* 3 - ON DARK: frosted white glass (exact hero reference) */
+.hsc-link, .pay-cta, .tk-unlock, .btn.cab-btn,
+.signature-card .btn, .prereg-section .btn, .prereg-section .btn-glass-brand {
+  background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.07) 100%) !important;
+  border: 1px solid rgba(255,255,255,0.42) !important;
+  color: #ffffff !important;
+  box-shadow: var(--g-hl), 0 10px 26px -14px rgba(0,0,0,0.55) !important;
+}
+.hsc-link:hover, .pay-cta:hover, .tk-unlock:hover, .btn.cab-btn:hover,
+.signature-card .btn:hover, .prereg-section .btn:hover {
+  background: linear-gradient(180deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.12) 100%) !important;
+  border-color: rgba(191,230,245,0.85) !important;
+  transform: translateY(-1px);
+}
+/* primary on dark: light-cyan tint so it still leads the section */
+.hf-submit, .btn.tk-cta, .prereg-section .btn-glass-brand {
+  background: linear-gradient(180deg, rgba(143,211,238,0.55) 0%, rgba(79,179,219,0.32) 100%) !important;
+  border: 1px solid rgba(220,242,252,0.75) !important;
+  color: #ffffff !important;
+  box-shadow: var(--g-hl), 0 12px 28px -12px rgba(79,179,219,0.6) !important;
+}
+.hf-submit:hover, .btn.tk-cta:hover, .prereg-section .btn-glass-brand:hover {
+  background: linear-gradient(180deg, rgba(160,220,242,0.68) 0%, rgba(79,179,219,0.45) 100%) !important;
+  transform: translateY(-1px);
+}
+.btn.tk-cta .tk-cta-badge { background: rgba(255,255,255,0.92); color: #164273; }
+
+/* one quiet shine for primaries only (replaces every older sweep/glow) */
+.btn::before, .hsc-link::before, .hsc-link::after, .hf-submit::before, .pay-cta::before,
+.tk-unlock::before, .ln-cta::before, .header-cta::before { content: none !important; animation: none !important; }
+.btn-glass-brand::after, .btn-ink::after, .hf-submit::after, .btn.tk-cta::after {
+  content: "" !important;
+  position: absolute; top: 0; bottom: 0; left: -40%; width: 30%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: skewX(-18deg);
+  animation: gSheen 5.5s ease-in-out infinite !important;
+  pointer-events: none; z-index: 1;
+}
+@keyframes gSheen { 0%, 70% { left: -40%; } 100% { left: 130%; } }
+
+/* press + keyboard feedback */
+.btn:active, .pay-cta:active, .hf-submit:active, .hsc-link:active, .tk-unlock:active, .ln-cta:active, .header-cta:active {
+  transform: translateY(0) scale(0.97) !important;
+}
+.btn:focus-visible, .pay-cta:focus-visible, .hf-submit:focus-visible, .hsc-link:focus-visible,
+.tk-unlock:focus-visible, .ln-cta:focus-visible, .header-cta:focus-visible, .price-veil:focus-visible {
+  outline: 2px solid #4FB3DB !important; outline-offset: 3px;
+}
+
+/* sizes: fit the parent, never overflow */
+.btn-block, .pay-cta, .hf-submit, .btn.tk-cta, .tk-unlock { width: 100%; }
+.header-cta { min-height: 40px; padding: 0.55rem 1.15rem !important; font-size: 13.5px !important; }
+.ln-cta { min-height: 46px; }
+@media (max-width: 640px) {
+  :root { --g-pad: 0.8rem 1.2rem; --g-font: 14.5px; --g-minh: 48px; }
+  .btn:not(.header-cta), .pay-cta, .hf-submit, .tk-unlock { width: 100%; }
+  .header-cta { font-size: 12.5px !important; padding: 0.45rem 0.9rem !important; min-height: 36px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-glass-brand::after, .btn-ink::after, .hf-submit::after, .btn.tk-cta::after { animation: none !important; display: none; }
+}
+
+/* mobile sticky footer: same glass language, compact tiles */
+.sf-btn {
+  border-radius: 14px !important;
+  -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur);
+  box-shadow: var(--g-hl) !important;
+}
+
+/* =====================================================================
+   SWIPE-TO-ACTION (hero: Brochure / Floor Plans / Site Visit)
+   Tap works exactly like a normal link. Swipe is an optional, more
+   satisfying path: drag the knob right; past 80% it completes.
+   ===================================================================== */
+.hero-secondary-ctas.swipe-stack {
+  display: flex !important; flex-direction: column; align-items: stretch;
+  gap: 0.6rem !important; width: 100%; max-width: 420px; margin-left: auto; margin-right: auto;
+}
+.hsc-link.swipe-cta {
+  -webkit-user-drag: none;
+  justify-content: flex-start !important;
+  width: 100%; min-height: 54px; padding: 5px !important;
+  user-select: none; -webkit-user-select: none; touch-action: pan-y;
+}
+.swipe-cta .sw-fill {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(143,211,238,0.10), rgba(143,211,238,0.38));
+  pointer-events: none; z-index: 0;
+}
+.swipe-cta .sw-knob {
+  position: relative; z-index: 3; flex: 0 0 auto;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(220,240,250,0.85));
+  color: #164273; box-shadow: 0 4px 12px -4px rgba(0,0,0,0.45), inset 0 1px 0 #fff;
+  cursor: grab; touch-action: none; will-change: transform;
+}
+.swipe-cta .sw-knob svg { width: 20px; height: 20px; }
+.swipe-cta.dragging .sw-knob { cursor: grabbing; }
+.swipe-cta .sw-label {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0 1rem 0 3.4rem; pointer-events: none;
+  font-weight: 600; letter-spacing: 0.01em;
+}
+.swipe-cta .sw-hint {
+  position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+  z-index: 2; display: flex; gap: 2px; pointer-events: none; opacity: .75;
+}
+.swipe-cta .sw-hint i {
+  width: 6px; height: 6px; border-right: 2px solid currentColor; border-top: 2px solid currentColor;
+  transform: rotate(45deg); opacity: .25; animation: swHint 1.6s ease-in-out infinite;
+}
+.swipe-cta .sw-hint i:nth-child(2) { animation-delay: .18s; }
+.swipe-cta .sw-hint i:nth-child(3) { animation-delay: .36s; }
+@keyframes swHint { 0%, 100% { opacity: .2; } 40% { opacity: 1; } }
+.swipe-cta.idle-nudge .sw-knob { animation: swNudge 2.8s ease-in-out 1.2s 2; }
+@keyframes swNudge { 0%, 100% { transform: translateX(0); } 18% { transform: translateX(18px); } 32% { transform: translateX(0); } }
+.swipe-cta.done .sw-fill { width: 100% !important; transition: width .2s ease; }
+.swipe-cta.done .sw-label { opacity: 0; }
+.swipe-cta .sw-ok {
+  position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center;
+  gap: .45em; font-weight: 600; opacity: 0; transform: scale(.92); transition: opacity .2s ease, transform .25s ease; pointer-events: none;
+}
+.swipe-cta.done .sw-ok { opacity: 1; transform: scale(1); }
+.swipe-cta.snap .sw-knob, .swipe-cta.snap .sw-fill { transition: transform .35s cubic-bezier(.2,.9,.3,1.2), width .35s cubic-bezier(.2,.9,.3,1.2); }
+@media (prefers-reduced-motion: reduce) {
+  .swipe-cta .sw-hint i, .swipe-cta.idle-nudge .sw-knob { animation: none; }
+}
+
+/* =====================================================================
+   PRICE VEIL (2 BHK / 3 BHK): a price clearly exists, but stays hidden.
+   Placeholder characters only - the real price is NOT in the page source.
+   1 BHK uses the same slot, unblurred.
+   ===================================================================== */
+.price-slot { margin: 0.9rem 0 0.2rem; text-align: left; }
+.price-slot .ps-lbl {
+  font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #1E6FA8;
+}
+.price-slot .ps-big {
+  display: block; margin-top: .15rem;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(30px, 3.2vw, 38px); line-height: 1.05; font-weight: 600; color: #0B1E36;
+}
+.price-slot .ps-big small { font-size: .45em; font-family: 'Inter', system-ui, sans-serif; font-weight: 600; color: #475569; margin-left: .2em; }
+.price-veil {
+  position: relative; display: block; margin-top: .25rem; border-radius: 14px;
+  text-decoration: none !important; cursor: pointer; overflow: hidden;
+}
+.price-veil .pv-num {
+  display: block; filter: blur(9px); opacity: .85; user-select: none; -webkit-user-select: none;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(30px, 3.2vw, 38px); line-height: 1.05; font-weight: 600; color: #0B1E36;
+  padding: .1rem .2rem; transition: filter .3s ease;
+}
+.price-veil .pv-chip {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: .4em; white-space: nowrap;
+  padding: .45rem .85rem; border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(230,242,250,0.72));
+  border: 1px solid rgba(22,66,115,0.22);
+  -webkit-backdrop-filter: var(--g-blur); backdrop-filter: var(--g-blur);
+  box-shadow: var(--g-hl), 0 6px 16px -8px rgba(22,66,115,.5);
+  color: #164273; font-size: 12.5px; font-weight: 700; letter-spacing: .02em;
+}
+.price-veil .pv-chip svg { width: 14px; height: 14px; }
+.price-veil:hover .pv-num { filter: blur(8px); }
+.price-veil:hover .pv-chip { border-color: rgba(30,111,168,.5); }
+.price-trust { margin-top: .6rem; font-size: 11.5px; color: #64748b; text-align: center; }
+/* price veil refinement: digits stay legible as "a price", chip sits beside it */
+.price-veil { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem .7rem; overflow: visible; }
+.price-veil .pv-num { filter: blur(5.5px); opacity: .9; padding: 0; }
+.price-veil:hover .pv-num { filter: blur(5px); }
+.price-veil .pv-chip { position: static; transform: none; }
