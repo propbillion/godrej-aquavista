@@ -398,8 +398,9 @@ document.addEventListener('click', function (e) {
    itself for 4 days after being shown so it never repeats on a quick revisit. */
 (function () {
   'use strict';
+  const overlay = document.getElementById('launchNudgeOverlay');
   const card = document.getElementById('launchNudge');
-  if (!card) return;
+  if (!overlay || !card) return;
 
   const STORAGE_KEY = 'avLaunchNudgeShownAt';
   const SUPPRESS_DAYS = 4;
@@ -419,8 +420,8 @@ document.addEventListener('click', function (e) {
   function reveal() {
     if (shown) return;
     shown = true;
-    card.classList.add('show');
-    card.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
     try {
       sessionStorage.setItem('avLaunchNudgeSeen', '1');
       localStorage.setItem(STORAGE_KEY, String(Date.now()));
@@ -439,12 +440,17 @@ document.addEventListener('click', function (e) {
   window.addEventListener('scroll', onScroll, { passive: true });
 
   function dismiss() {
-    card.classList.remove('show');
-    card.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
   }
 
   const closeBtn = document.getElementById('launchNudgeClose');
   if (closeBtn) closeBtn.addEventListener('click', dismiss);
+
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) dismiss(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) dismiss();
+  });
 
   const cta = document.getElementById('launchNudgeCta');
   if (cta) cta.addEventListener('click', () => setTimeout(dismiss, 300));
