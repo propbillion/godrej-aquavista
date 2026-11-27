@@ -393,9 +393,17 @@ document.addEventListener('click', function (e) {
 })();
 
 /* ---------- Launch Price List Nudge ---------- */
-/* Honest, one-time nudge. Shows once per session after a genuine engagement
-   signal (time on page OR scroll depth, whichever first), then suppresses
-   itself for 4 days after being shown so it never repeats on a quick revisit. */
+/* Honest nudge, no dark patterns - only real numbers already live elsewhere
+   on this page. Strategy: show almost immediately on load (don't make people
+   wait). If someone closes it without acting, assume they just weren't ready
+   yet - not that they refused - and offer it again after a short gap, up to
+   a few tries, as long as they haven't converted (clicked ANY WhatsApp CTA
+   on the page, or submitted the enquiry form). Once they convert, or once
+   they've seen it a few times without converting, stop for the session and
+   stay quiet for 4 days so repeat visitors are never annoyed by it.
+   Body-scroll is locked while it's open - this also fixes it rendering off
+   the visible area on mobile browsers when the page had already been
+   scrolled (a known iOS/Android quirk with fixed-position overlays). */
 (function () {
   'use strict';
   const overlay = document.getElementById('launchNudgeOverlay');
@@ -405,6 +413,9 @@ document.addEventListener('click', function (e) {
   const STORAGE_KEY = 'avLaunchNudgeShownAt';
   const SUPPRESS_DAYS = 4;
   const SUPPRESS_MS = SUPPRESS_DAYS * 24 * 60 * 60 * 1000;
+  const INITIAL_DELAY_MS = 900;
+  const RESHOW_DELAY_MS = 15000;
+  const MAX_ATTEMPTS = 3;
 
   function recentlyShown() {
     try {
@@ -414,35 +425,64 @@ document.addEventListener('click', function (e) {
     } catch (e) { return false; }
   }
 
-  if (recentlyShown() || sessionStorage.getItem('avLaunchNudgeSeen') === '1') return;
+  if (recentlyShown()) return;
 
-  let shown = false;
+  let attempts = 0;
+  let converted = false;
+  let reshowTimer = null;
+  let savedScrollY = 0;
+
+  function lockScroll() {
+    savedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = '-' + savedScrollY + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+  }
+
+  function unlockScroll() {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    window.scrollTo(0, savedScrollY);
+  }
+
   function reveal() {
-    if (shown) return;
-    shown = true;
+    if (converted || attempts >= MAX_ATTEMPTS) return;
+    attempts++;
+    lockScroll();
     overlay.classList.add('show');
     overlay.setAttribute('aria-hidden', 'false');
-    try {
-      sessionStorage.setItem('avLaunchNudgeSeen', '1');
-      localStorage.setItem(STORAGE_KEY, String(Date.now()));
-    } catch (e) {}
-    window.removeEventListener('scroll', onScroll);
-    clearTimeout(timeTrigger);
+    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
   }
-
-  function onScroll() {
-    const scrolled = window.scrollY + window.innerHeight;
-    const docHeight = document.documentElement.scrollHeight;
-    if (scrolled > docHeight * 0.55) reveal();
-  }
-
-  const timeTrigger = setTimeout(reveal, 16000);
-  window.addEventListener('scroll', onScroll, { passive: true });
 
   function dismiss() {
+    if (!overlay.classList.contains('show')) return;
     overlay.classList.remove('show');
     overlay.setAttribute('aria-hidden', 'true');
+    unlockScroll();
+    clearTimeout(reshowTimer);
+    if (!converted && attempts < MAX_ATTEMPTS) {
+      reshowTimer = setTimeout(reveal, RESHOW_DELAY_MS);
+    }
   }
+
+  function markConverted() {
+    if (converted) return;
+    converted = true;
+    clearTimeout(reshowTimer);
+    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
+    if (overlay.classList.contains('show')) {
+      overlay.classList.remove('show');
+      overlay.setAttribute('aria-hidden', 'true');
+      unlockScroll();
+    }
+  }
+
+  setTimeout(reveal, INITIAL_DELAY_MS);
 
   const closeBtn = document.getElementById('launchNudgeClose');
   if (closeBtn) closeBtn.addEventListener('click', dismiss);
@@ -453,5 +493,14 @@ document.addEventListener('click', function (e) {
   });
 
   const cta = document.getElementById('launchNudgeCta');
-  if (cta) cta.addEventListener('click', () => setTimeout(dismiss, 300));
+  if (cta) cta.addEventListener('click', markConverted);
+
+  /* Any WhatsApp CTA elsewhere on the page, or submitting the enquiry form,
+     is a genuine conversion signal - stop nudging once the visitor has acted. */
+  document.querySelectorAll('a[href^="https://wa.me/"]').forEach((a) => {
+    if (a.id === 'launchNudgeCta') return;
+    a.addEventListener('click', markConverted);
+  });
+  const preForm = document.getElementById('preForm');
+  if (preForm) preForm.addEventListener('submit', markConverted);
 })();
