@@ -391,3 +391,61 @@ document.addEventListener('click', function (e) {
   pm.addEventListener('click', (e) => { if (e.target === pm) close(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 })();
+
+/* ---------- Launch Price List Nudge ---------- */
+/* Honest, one-time nudge. Shows once per session after a genuine engagement
+   signal (time on page OR scroll depth, whichever first), then suppresses
+   itself for 4 days after being shown so it never repeats on a quick revisit. */
+(function () {
+  'use strict';
+  const card = document.getElementById('launchNudge');
+  if (!card) return;
+
+  const STORAGE_KEY = 'avLaunchNudgeShownAt';
+  const SUPPRESS_DAYS = 4;
+  const SUPPRESS_MS = SUPPRESS_DAYS * 24 * 60 * 60 * 1000;
+
+  function recentlyShown() {
+    try {
+      const last = localStorage.getItem(STORAGE_KEY);
+      if (!last) return false;
+      return (Date.now() - parseInt(last, 10)) < SUPPRESS_MS;
+    } catch (e) { return false; }
+  }
+
+  if (recentlyShown() || sessionStorage.getItem('avLaunchNudgeSeen') === '1') return;
+
+  let shown = false;
+  function reveal() {
+    if (shown) return;
+    shown = true;
+    card.classList.add('show');
+    card.setAttribute('aria-hidden', 'false');
+    try {
+      sessionStorage.setItem('avLaunchNudgeSeen', '1');
+      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+    } catch (e) {}
+    window.removeEventListener('scroll', onScroll);
+    clearTimeout(timeTrigger);
+  }
+
+  function onScroll() {
+    const scrolled = window.scrollY + window.innerHeight;
+    const docHeight = document.documentElement.scrollHeight;
+    if (scrolled > docHeight * 0.55) reveal();
+  }
+
+  const timeTrigger = setTimeout(reveal, 16000);
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  function dismiss() {
+    card.classList.remove('show');
+    card.setAttribute('aria-hidden', 'true');
+  }
+
+  const closeBtn = document.getElementById('launchNudgeClose');
+  if (closeBtn) closeBtn.addEventListener('click', dismiss);
+
+  const cta = document.getElementById('launchNudgeCta');
+  if (cta) cta.addEventListener('click', () => setTimeout(dismiss, 300));
+})();
