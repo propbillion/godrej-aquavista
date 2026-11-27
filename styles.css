@@ -6031,16 +6031,20 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 }
 
 /* ============================ CTA SIZE BOOST (site-wide) ============================
-   Every real conversion button matched to the exact size/weight of the
-   payment-plan "Enquire To Know This Plan" button (.pay-cta) - that's the
-   reference size the whole site now uses. This sits last in the file so it
-   wins over every older per-section rule without touching anyone's
-   color/shape - only size.
-   Left alone on purpose (functional chrome, not a content CTA, and matching
-   this size would break its fixed-size container): the sticky top nav
-   button (.header-cta), its chip strip (.action-chip), and the mobile
-   sticky footer bar (.sf-btn). The popup's own button (.ln-cta) keeps a
-   size proportioned to its own card, set in the popup redesign.
+   Every real conversion button, genuinely large - the eye should land on it
+   first, on every section. This sits last in the file so it wins over every
+   older per-section rule without touching anyone's color/shape - only size.
+   Every one of these already sits in a layout that absorbs bigger buttons
+   without breaking: full-width-in-card buttons (.btn-block, .pay-cta,
+   .hf-submit) just get taller; the rest (.cab-btn in a grid "auto" column,
+   .tk-cta in its own sidebar block, .hsc-link in a flex-wrap row) just get
+   wider and the row/column sizes to fit them - nothing is fixed-width around
+   them, so nothing clips or overflows.
+   Left alone on purpose - pills and the footer bar, exactly as asked: the
+   sticky top nav button (.header-cta), its chip strip (.action-chip), the
+   small inline "Best Price" lock badges (.pp-lock), and the mobile sticky
+   footer bar (.sf-btn). The popup's own button (.ln-cta) also stays as-is -
+   it's already sized to fit its own compact card from the popup redesign.
    =================================================================== */
 .btn,
 .btn-brand,
@@ -6054,15 +6058,24 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 .btn.cab-btn,
 .hf-submit,
 .hsc-link {
-  padding: 0.85rem 1.6rem !important;
-  font-size: 14px !important;
+  padding: 1.3rem 2.6rem !important;
+  font-size: 17px !important;
   font-weight: 700 !important;
 }
 /* .btn-sm existed to make some same-purpose buttons smaller than others -
    that mismatch is exactly what should go away, so it no longer shrinks anything. */
 .btn-sm {
-  padding: 0.85rem 1.6rem !important;
-  font-size: 14px !important;
+  padding: 1.3rem 2.6rem !important;
+  font-size: 17px !important;
+}
+/* .tk-cta sits in a narrow sidebar column ("price-side") next to a fixed
+   wider column - at this new bigger size it needs to go full-width there
+   instead of fighting that column for horizontal space, or it would wrap
+   mid-word or spill past the card edge. Same big button, just stacked to
+   fit where it lives. */
+.btn.tk-cta {
+  width: 100%;
+  justify-content: center;
 }
 
 /* Hero's "Download Brochure / Get Floor Plans / Book Site Visit" were plain
@@ -6105,8 +6118,8 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
   .btn.cab-btn,
   .hf-submit,
   .hsc-link {
-    padding: 0.8rem 1.35rem !important;
-    font-size: 13.5px !important;
+    padding: 1.1rem 1.9rem !important;
+    font-size: 15.5px !important;
   }
 }
 
