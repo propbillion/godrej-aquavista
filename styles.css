@@ -6031,19 +6031,16 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 }
 
 /* ============================ CTA SIZE BOOST (site-wide) ============================
-   Every real conversion button on the page, made larger and bolder on purpose -
-   the eye should land on the button first, every time, on every section.
-   This sits last in the file so it wins over the older per-section rules
-   without touching anyone's color/shape - only size.
-   Left alone on purpose (functional chrome, not a content CTA, and enlarging
-   it would break its fixed-size container): the sticky top nav button
-   (.header-cta) and its chip strip (.action-chip), and the mobile sticky
-   footer bar (.sf-btn). The popup's own button (.ln-cta) already got a
-   deliberate size pass in the popup redesign, so it's nudged only slightly
-   here to stay in proportion with its card.
-   Also left alone: .hsc-link - that's a plain underlined text link (no box),
-   not a button; forcing button-sized padding onto it would just add blank
-   space around text and look broken, not "bigger".
+   Every real conversion button matched to the exact size/weight of the
+   payment-plan "Enquire To Know This Plan" button (.pay-cta) - that's the
+   reference size the whole site now uses. This sits last in the file so it
+   wins over every older per-section rule without touching anyone's
+   color/shape - only size.
+   Left alone on purpose (functional chrome, not a content CTA, and matching
+   this size would break its fixed-size container): the sticky top nav
+   button (.header-cta), its chip strip (.action-chip), and the mobile
+   sticky footer bar (.sf-btn). The popup's own button (.ln-cta) keeps a
+   size proportioned to its own card, set in the popup redesign.
    =================================================================== */
 .btn,
 .btn-brand,
@@ -6054,22 +6051,46 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 .btn-glass-light,
 .pay-cta,
 .btn.tk-cta,
-.btn.cab-btn {
-  padding: 1.15rem 2.15rem !important;
-  font-size: 16px !important;
+.btn.cab-btn,
+.hf-submit,
+.hsc-link {
+  padding: 0.85rem 1.6rem !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
 }
 /* .btn-sm existed to make some same-purpose buttons smaller than others -
    that mismatch is exactly what should go away, so it no longer shrinks anything. */
 .btn-sm {
-  padding: 1.15rem 2.15rem !important;
-  font-size: 16px !important;
+  padding: 0.85rem 1.6rem !important;
+  font-size: 14px !important;
 }
-.ln-cta {
-  padding: 1rem 1.2rem !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
+
+/* Hero's "Download Brochure / Get Floor Plans / Book Site Visit" were plain
+   underlined text links - turned into real pill buttons at the same
+   reference size, dark-hero appropriate (translucent glass, not solid). */
+.hsc-link {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  color: #ffffff !important;
+  text-decoration: none !important;
+  letter-spacing: 0.02em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.2s var(--ease);
 }
+.hsc-link:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--gold-light) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+.hsc-divider { display: none !important; }
+.hero-secondary-ctas { gap: 0.6rem 0.75rem !important; }
+
 @media (max-width: 640px) {
   .btn,
   .btn-brand,
@@ -6081,8 +6102,86 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
   .btn-sm,
   .pay-cta,
   .btn.tk-cta,
-  .btn.cab-btn {
-    padding: 1.05rem 1.7rem !important;
-    font-size: 15px !important;
+  .btn.cab-btn,
+  .hf-submit,
+  .hsc-link {
+    padding: 0.8rem 1.35rem !important;
+    font-size: 13.5px !important;
   }
 }
+
+/* ============================ CTA "SHINE" (site-wide) ============================
+   Matching size alone didn't make the buttons feel different - the pay-cta
+   ("Enquire To Know This Plan") stands out because it keeps moving even when
+   nobody is hovering it, so the eye catches it on its own. This gives every
+   other primary button the same continuous shine, as a separate sweep layer
+   on top - it never touches each button's own background/border color, so
+   the site's existing color identity per section stays exactly as it was.
+   =================================================================== */
+/* .btn.tk-cta and .pay-cta already have their own continuous shine
+   (tkGlow/tkSheen and tkUnlockShine) - they keep that, no need to stack a
+   second sweep on top of it. */
+.btn-glass-brand, .btn-glass-light, .btn-ink, .btn-brand, .btn-outline-light,
+.btn.cab-btn, .hsc-link, .hf-submit {
+  position: relative;
+  overflow: hidden;
+}
+.btn-glass-brand::before, .btn-glass-light::before, .btn-ink::before, .btn-brand::before,
+.btn-outline-light::before, .btn.cab-btn::before, .hsc-link::before,
+.hf-submit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  transform: skewX(-18deg);
+  animation: ctaShine 3.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes ctaShine {
+  0% { left: -60%; }
+  55%, 100% { left: 130%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-glass-brand::before, .btn-glass-light::before, .btn-ink::before, .btn-brand::before,
+  .btn-outline-light::before, .btn.cab-btn::before, .hsc-link::before,
+  .hf-submit::before { animation: none; display: none; }
+}
+
+/* ============================ PRICE LOCK HINT (site-wide) ============================
+   A small lock icon next to every plain price mention, so it reads the same
+   way the "Best Price" rows already do: there may be an even better number
+   underneath this one - go unlock it. Uses currentColor via a mask, so it
+   automatically matches whatever text color it sits in (dark card or hero). */
+.price-lock-hint {
+  display: inline-flex;
+  width: 0.72em;
+  height: 0.72em;
+  margin-left: 0.3em;
+  vertical-align: middle;
+  opacity: 0.82;
+  background-color: var(--gold-deep);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='5' y='11' width='14' height='10' rx='2' fill='none' stroke='black' stroke-width='2.6'/><path d='M8 11V7a4 4 0 0 1 8 0v4' fill='none' stroke='black' stroke-width='2.6'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='5' y='11' width='14' height='10' rx='2' fill='none' stroke='black' stroke-width='2.6'/><path d='M8 11V7a4 4 0 0 1 8 0v4' fill='none' stroke='black' stroke-width='2.6'/></svg>");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  flex-shrink: 0;
+}
+/* On a dark/navy background, the plain gold dot reads better light-gold */
+.hero-headline-v2 .price-lock-hint,
+.hf-trust .price-lock-hint,
+.price-side .p .price-lock-hint {
+  background-color: var(--gold-light);
+  opacity: 0.95;
+}
+
+/* ============================ GATED IMAGE BLUR (+12%) ============================
+   Teaser floor-plan/unit images were blurred at 3px - bumped ~12% per request. */
+.gated > img { filter: blur(3.4px) saturate(1.02) !important; }
