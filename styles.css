@@ -5808,3 +5808,80 @@ img { content-visibility: visible !important; }
 /* Sitelink anchors - land below the fixed header + action bar */
 section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 @media (max-width: 768px) { section[id], .auto-gallery[id] { scroll-margin-top: 108px; } }
+/* ============================ LAUNCH PRICE LIST NUDGE ============================
+   Honest, low-pressure one-time card. Real numbers only (Save 6% / 25 units left
+   are already live elsewhere on this page). Bottom-left on desktop so it never
+   collides with the floating WhatsApp button (bottom-right); bottom-sheet on
+   mobile, clear of the sticky footer bar.
+   ============================================================================ */
+.launch-nudge {
+  position: fixed;
+  left: 18px; bottom: 18px;
+  z-index: 1200;
+  width: 332px;
+  max-width: calc(100vw - 36px);
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.3rem 1.3rem 1.1rem;
+  box-shadow: 0 24px 60px -18px rgba(11, 30, 54, 0.35), 0 2px 10px rgba(11, 30, 54, 0.08);
+  border: 1px solid rgba(22, 66, 115, 0.10);
+  border-left: 3px solid var(--gold);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px);
+  transition: opacity .45s var(--ease), transform .45s var(--ease), visibility .45s;
+  pointer-events: none;
+}
+.launch-nudge.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.ln-close {
+  position: absolute;
+  top: 0.55rem; right: 0.7rem;
+  background: none; border: none;
+  font-size: 20px; line-height: 1;
+  color: var(--slate-light);
+  cursor: pointer; opacity: 0.7;
+  padding: 0.25rem;
+}
+.ln-close:hover { opacity: 1; color: var(--brand); }
+.ln-tag {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--gold-deep);
+  margin-bottom: 0.45rem;
+}
+.ln-head {
+  font-family: 'Source Serif 4', serif;
+  font-size: 17.5px; font-weight: 600; color: var(--brand-dark);
+  margin: 0 0 0.4rem; line-height: 1.3;
+  padding-right: 1rem;
+}
+.ln-body {
+  font-size: 13px; line-height: 1.55; color: var(--slate);
+  margin: 0 0 0.9rem;
+}
+.ln-cta {
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+  color: #ffffff; text-decoration: none;
+  font-size: 13.5px; font-weight: 600;
+  padding: 0.75rem 1rem; border-radius: 10px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.ln-cta:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -8px rgba(22,66,115,0.45); }
+.ln-cta span { transition: transform .2s ease; }
+.ln-cta:hover span { transform: translateX(2px); }
+.ln-fine {
+  font-size: 10.5px; color: var(--slate-light); text-align: center;
+  margin: 0.55rem 0 0;
+}
+@media (max-width: 640px) {
+  .launch-nudge {
+    left: 10px; right: 10px; bottom: 76px;
+    width: auto; max-width: none;
+    border-radius: 14px;
+  }
+}
