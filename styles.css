@@ -5890,10 +5890,11 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 @media (max-width: 768px) { section[id], .auto-gallery[id] { scroll-margin-top: 108px; } }
 
 /* ============================ LAUNCH PRICE LIST NUDGE ============================
-   Honest, low-pressure one-time modal. Real numbers only (Save 6% / 25 units left
-   are already live elsewhere on this page) - no fake urgency, no dark patterns.
-   Centered overlay so it reads as a genuine "gift" moment, not a corner banner
-   the eye learns to ignore.
+   Honest, no-dark-pattern modal. Real numbers only (Save 6% / 25 units left are
+   already live elsewhere on this page; "first 50" reflects the builder's own
+   launch-allocation policy). Centered overlay, warm gift framing, a touch of
+   movement on the icon so it reads as something worth opening - not a banner
+   the eye learns to skip.
    ============================================================================ */
 .ln-overlay {
   position: fixed;
@@ -5904,12 +5905,12 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
   justify-content: center;
   padding: 1.25rem;
   overflow-y: auto;
-  background: rgba(9, 28, 51, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(9, 28, 51, 0.58);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   opacity: 0;
   visibility: hidden;
-  transition: opacity .4s var(--ease), visibility .4s;
+  transition: opacity .35s var(--ease), visibility .35s;
   pointer-events: none;
 }
 .ln-overlay.show {
@@ -5920,16 +5921,17 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 .launch-nudge {
   position: relative;
   width: 100%;
-  max-width: 378px;
+  max-width: 338px;
   margin: auto;
-  background: #ffffff;
+  background: linear-gradient(165deg, #ffffff 0%, #fffaf0 55%, #fdf2dc 100%);
   border-radius: 20px;
-  padding: 2rem 1.9rem 1.6rem;
-  box-shadow: 0 40px 90px -24px rgba(8, 24, 46, 0.45), 0 2px 10px rgba(11, 30, 54, 0.08);
+  padding: 1.7rem 1.55rem 1.3rem;
+  box-shadow: 0 40px 90px -24px rgba(8, 24, 46, 0.5), 0 2px 10px rgba(11, 30, 54, 0.1);
+  border: 1px solid rgba(228, 181, 104, 0.35);
   text-align: center;
-  transform: scale(0.93) translateY(10px);
+  transform: scale(0.9) translateY(14px);
   opacity: 0;
-  transition: transform .45s var(--ease), opacity .4s var(--ease);
+  transition: transform .4s var(--ease), opacity .35s var(--ease);
 }
 .ln-overlay.show .launch-nudge {
   transform: scale(1) translateY(0);
@@ -5937,7 +5939,7 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 }
 .ln-close {
   position: absolute;
-  top: 0.75rem; right: 0.85rem;
+  top: 0.65rem; right: 0.75rem;
   background: none; border: none;
   font-size: 20px; line-height: 1;
   color: var(--slate-light);
@@ -5946,56 +5948,66 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 }
 .ln-close:hover { opacity: 1; color: var(--brand); }
 .ln-gift {
-  width: 54px; height: 54px;
-  margin: 0 auto 1rem;
+  position: relative;
+  width: 50px; height: 50px;
+  margin: 0 auto 0.8rem;
   display: flex; align-items: center; justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(145deg, rgba(79,179,219,0.14), rgba(228,181,104,0.16));
-  color: var(--gold-deep);
+  background: linear-gradient(145deg, var(--gold-light), var(--gold-deep));
+  color: #ffffff;
+  box-shadow: 0 8px 20px -8px rgba(197, 143, 58, 0.6);
 }
-.ln-gift svg { width: 26px; height: 26px; }
+.ln-gift::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(228, 181, 104, 0.4), transparent 72%);
+  animation: lnGlow 2.2s ease-in-out infinite;
+}
+@keyframes lnGlow {
+  0%, 100% { transform: scale(0.9); opacity: 0.55; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+.ln-gift svg { position: relative; width: 23px; height: 23px; }
 .ln-tag {
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--gold-deep);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 .ln-head {
   font-family: 'Source Serif 4', serif;
-  font-size: 19px; font-weight: 600; color: var(--brand-dark);
-  margin: 0 0 1rem; line-height: 1.32;
+  font-size: 18.5px; font-weight: 600; color: var(--brand-dark);
+  margin: 0 0 0.9rem; line-height: 1.3;
 }
 .ln-points {
   list-style: none;
-  margin: 0 0 1rem;
-  padding: 0.85rem 1rem;
-  background: rgba(22, 66, 115, 0.04);
-  border: 1px solid rgba(22, 66, 115, 0.10);
+  margin: 0 0 1.1rem;
+  padding: 0.8rem 0.95rem;
+  background: rgba(22, 66, 115, 0.05);
+  border: 1px solid rgba(22, 66, 115, 0.12);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.42rem;
   text-align: left;
 }
 .ln-points li {
   position: relative;
   padding-left: 1.3em;
-  font-size: 13.5px;
-  line-height: 1.45;
+  font-size: 13px;
+  line-height: 1.42;
   color: var(--slate);
 }
 .ln-points li::before {
   content: '';
   position: absolute;
-  left: 0.1em; top: 0.5em;
+  left: 0.1em; top: 0.48em;
   width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--gold);
 }
 .ln-points strong { color: var(--brand-dark); font-weight: 600; }
-.ln-body {
-  font-size: 13px; line-height: 1.55; color: var(--slate);
-  margin: 0 0 1.1rem;
-}
 .ln-cta {
   display: flex; align-items: center; justify-content: center; gap: 0.4rem;
   background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
@@ -6009,11 +6021,11 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 .ln-cta:hover span { transform: translateX(2px); }
 .ln-fine {
   font-size: 10.5px; color: var(--slate-light); text-align: center;
-  margin: 0.7rem 0 0;
+  margin: 0.65rem 0 0;
 }
 @media (max-width: 640px) {
   .launch-nudge {
-    padding: 1.75rem 1.4rem 1.4rem;
+    padding: 1.5rem 1.3rem 1.2rem;
     border-radius: 18px;
   }
 }
