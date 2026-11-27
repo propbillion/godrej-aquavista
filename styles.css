@@ -5803,3 +5803,8 @@ img { content-visibility: visible !important; }
 .pay-cta span { transition: transform .25s var(--ease); }
 .pay-card:hover .pay-cta span { transform: translateX(3px); }
 @media (prefers-reduced-motion: reduce) { .pay-cta { animation: none; } }
+
+
+/* Sitelink anchors - land below the fixed header + action bar */
+section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
+@media (max-width: 768px) { section[id], .auto-gallery[id] { scroll-margin-top: 108px; } }
