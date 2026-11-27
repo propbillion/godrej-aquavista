@@ -411,18 +411,15 @@ document.addEventListener('click', function (e) {
   if (!overlay || !card) return;
 
   const STORAGE_KEY = 'avLaunchNudgeShownAt';
-  const SUPPRESS_DAYS = 4;
-  const SUPPRESS_MS = SUPPRESS_DAYS * 24 * 60 * 60 * 1000;
-  const INITIAL_DELAY_MS = 900;
+  const INITIAL_DELAY_MS = 0;
   const RESHOW_DELAY_MS = 15000;
   const MAX_ATTEMPTS = 3;
 
+  /* Show on every fresh visit (like the competitor's on-load modal);
+     only suppressed within the same browser tab session after a conversion. */
   function recentlyShown() {
-    try {
-      const last = localStorage.getItem(STORAGE_KEY);
-      if (!last) return false;
-      return (Date.now() - parseInt(last, 10)) < SUPPRESS_MS;
-    } catch (e) { return false; }
+    try { return sessionStorage.getItem(STORAGE_KEY) === 'converted'; }
+    catch (e) { return false; }
   }
 
   if (recentlyShown()) return;
@@ -456,7 +453,6 @@ document.addEventListener('click', function (e) {
     lockScroll();
     overlay.classList.add('show');
     overlay.setAttribute('aria-hidden', 'false');
-    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
   }
 
   function dismiss() {
@@ -474,7 +470,7 @@ document.addEventListener('click', function (e) {
     if (converted) return;
     converted = true;
     clearTimeout(reshowTimer);
-    try { localStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) {}
+    try { sessionStorage.setItem(STORAGE_KEY, 'converted'); } catch (e) {}
     if (overlay.classList.contains('show')) {
       overlay.classList.remove('show');
       overlay.setAttribute('aria-hidden', 'true');
@@ -482,7 +478,9 @@ document.addEventListener('click', function (e) {
     }
   }
 
-  setTimeout(reveal, INITIAL_DELAY_MS);
+  /* Instant: script sits at end of <body>, so the DOM is ready - open now,
+     without waiting for images or window load. */
+  if (INITIAL_DELAY_MS > 0) setTimeout(reveal, INITIAL_DELAY_MS); else reveal();
 
   const closeBtn = document.getElementById('launchNudgeClose');
   if (closeBtn) closeBtn.addEventListener('click', dismiss);
@@ -503,4 +501,100 @@ document.addEventListener('click', function (e) {
   });
   const preForm = document.getElementById('preForm');
   if (preForm) preForm.addEventListener('submit', markConverted);
+})();
+
+
+/* ===================== SCARCITY BARS: fill on view ===================== */
+(function () {
+  'use strict';
+  const bars = document.querySelectorAll('.inv-bar');
+  if (!bars.length) return;
+  function fill(bar) {
+    const pct = Math.max(0, Math.min(100, parseFloat(bar.getAttribute('data-fill')) || 0));
+    const el = bar.querySelector('.inv-bar-fill');
+    if (el) el.style.width = pct + '%';
+  }
+  if (!('IntersectionObserver' in window)) { bars.forEach(fill); return; }
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) { setTimeout(() => fill(e.target), 250); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.4 });
+  bars.forEach((b) => io.observe(b));
+})();
+
+/* ===================== SWIPE-TO-ACTION (hero glass buttons) =====================
+   Tap / click / Enter = normal link (opens WhatsApp). Swipe is optional:
+   drag the knob right; past 80% of the track it completes, shows a check,
+   then opens the same link. Short drags spring back; a drag never also fires
+   the click, so nothing triggers by accident. */
+(function () {
+  'use strict';
+  const items = document.querySelectorAll('.swipe-cta');
+  if (!items.length) return;
+  const COMPLETE_AT = 0.8;
+  const DRAG_THRESHOLD = 6;
+
+  items.forEach((el) => {
+    const knob = el.querySelector('.sw-knob');
+    const fill = el.querySelector('.sw-fill');
+    if (!knob || !fill) return;
+    let startX = 0, dx = 0, max = 0, active = false, dragged = false, pid = null;
+
+    function setPos(x) {
+      knob.style.transform = 'translateX(' + x + 'px)';
+      fill.style.width = (x + knob.offsetWidth + 5) + 'px';
+    }
+    function reset() {
+      el.classList.add('snap');
+      setPos(0);
+      fill.style.width = '0px';
+      setTimeout(() => el.classList.remove('snap'), 380);
+    }
+    function complete() {
+      el.classList.add('snap', 'done');
+      setPos(max);
+      if (navigator.vibrate) { try { navigator.vibrate(18); } catch (e) {} }
+      if (typeof trackConv === 'function') trackConv(CONV_WHATSAPP); // swipe skips the click listener
+      window.open(el.href, '_blank', 'noopener');
+      setTimeout(() => { el.classList.remove('done'); reset(); }, 1400);
+    }
+
+    // anchors are natively draggable - that would cancel the swipe mid-way
+    el.setAttribute('draggable', 'false');
+    el.addEventListener('dragstart', (e) => e.preventDefault());
+
+    knob.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      e.preventDefault();
+      el.classList.remove('idle-nudge', 'snap');
+      active = true; dragged = false; dx = 0;
+      startX = e.clientX;
+      max = el.clientWidth - knob.offsetWidth - 10;
+      pid = e.pointerId;
+      try { knob.setPointerCapture(pid); } catch (err) {}
+      el.classList.add('dragging');
+    });
+    knob.addEventListener('pointermove', (e) => {
+      if (!active) return;
+      dx = Math.max(0, Math.min(max, e.clientX - startX));
+      if (dx > DRAG_THRESHOLD) dragged = true;
+      if (dragged) { e.preventDefault(); setPos(dx); }
+    });
+    function end() {
+      if (!active) return;
+      active = false;
+      el.classList.remove('dragging');
+      try { knob.releasePointerCapture(pid); } catch (err) {}
+      if (!dragged) return;              // a plain tap: let the link's click handle it
+      if (dx >= max * COMPLETE_AT) complete(); else reset();
+    }
+    knob.addEventListener('pointerup', end);
+    knob.addEventListener('pointercancel', () => { if (active) { active = false; el.classList.remove('dragging'); reset(); } });
+
+    // A drag must never also fire the link's click (complete() opens it itself).
+    el.addEventListener('click', (e) => {
+      if (dragged) { e.preventDefault(); dragged = false; }
+    });
+  });
 })();
