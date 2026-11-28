@@ -548,59 +548,128 @@ document.addEventListener('click', function (e) {
   bars.forEach((b) => io.observe(b));
 })();
 
-/* ===================== SWIPE-TO-ACTION (hero glass buttons) =====================
-   Tap / click / Enter = normal link (opens WhatsApp). Swipe is optional:
-   drag the knob right; past 80% of the track it completes, shows a check,
-   then opens the same link. Short drags spring back; a drag never also fires
-   the click, so nothing triggers by accident. */
+/* ===================== SWIPE-TO-ACTION (every CTA button) =====================
+   One system for ALL call-to-action buttons: hero glass links and every
+   other .btn / price / payment / popup CTA. Tap / click / Enter = normal
+   link or submit. Swipe is optional: drag the knob right; past 80% of the
+   track it completes and fires a real click on the button (so the original
+   link, form submit and conversion tracking run exactly once). Short drags
+   spring back; a drag never also fires the click. */
 (function () {
   'use strict';
-  const items = document.querySelectorAll('.swipe-cta');
-  if (!items.length) return;
-  const COMPLETE_AT = 0.8;
-  const DRAG_THRESHOLD = 6;
+  var ARROW = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  var CHECK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var HINT = '<span class="sw-hint" aria-hidden="true"><i></i><i></i><i></i></span>';
 
-  items.forEach((el) => {
-    const knob = el.querySelector('.sw-knob');
-    const fill = el.querySelector('.sw-fill');
+  /* which surface is behind the button? dark -> white glass, light -> blue glass */
+  function lum(c) {
+    var m = c && c.match(/rgba?\(([^)]+)\)/); if (!m) return null;
+    var p = m[1].split(',').map(parseFloat);
+    if (p.length > 3 && p[3] < 0.5) return null;
+    return (0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2]) / 255;
+  }
+  function surfaceIsDark(el) {
+    for (var n = el.parentElement; n; n = n.parentElement) {
+      var cs = getComputedStyle(n);
+      var l = lum(cs.backgroundColor);
+      if (l !== null) return l < 0.5;
+      if (cs.backgroundImage && cs.backgroundImage !== 'none') {
+        var cols = cs.backgroundImage.match(/rgba?\([^)]+\)/g) || [];
+        for (var k = 0; k < cols.length; k++) { var ll = lum(cols[k]); if (ll !== null) return ll < 0.5; }
+        if (/url\(/.test(cs.backgroundImage)) return true;
+      }
+    }
+    return false;
+  }
+
+  /* build the knob structure for buttons that do not have it in the HTML */
+  function build(el) {
+    if (el.classList.contains('swipe-cta')) return;          // hero buttons: markup already complete
+    el.classList.add('gs', 'gs-swipe');
+    if (!el.querySelector('.sw-fill')) {
+      var f = document.createElement('span'); f.className = 'sw-fill'; f.setAttribute('aria-hidden', 'true');
+      el.insertBefore(f, el.firstChild);
+    }
+    var knob = el.querySelector('.g-knob');
+    if (!knob) {
+      knob = document.createElement('span'); knob.className = 'g-knob'; knob.setAttribute('aria-hidden', 'true');
+      knob.innerHTML = ARROW;
+      var txt = document.createElement('span'); txt.className = 'g-txt';
+      while (el.childNodes.length > 1) { txt.appendChild(el.childNodes[1]); }
+      txt.querySelectorAll('span').forEach(function (sp) { if (sp.textContent.trim() === '\u2192') sp.remove(); });   // knob replaces the trailing arrow
+      el.appendChild(knob); el.appendChild(txt);
+    } else {
+      // old static markup: knob first then .g-txt - make sure the fill is first
+      var fill = el.querySelector('.sw-fill'); if (fill !== el.firstChild) el.insertBefore(fill, el.firstChild);
+    }
+    knob.classList.add('sw-knob-g');
+    el.classList.add('g-hero');
+    el.insertAdjacentHTML('beforeend', HINT + '<span class="sw-ok" aria-hidden="true">' + CHECK + ' Opening</span>');
+    el.classList.toggle('on-dark', surfaceIsDark(el));
+    el.classList.toggle('on-light', !el.classList.contains('on-dark'));
+  }
+
+  var SEL = [
+    'a.btn:not(.header-cta)', 'button.btn', '.hf-submit', '.pay-cta', '.tk-unlock', '.ln-cta'
+  ].join(',');
+  document.querySelectorAll(SEL).forEach(build);
+  // header pill + chips + sticky tiles: glass look only (too small to swipe)
+  document.querySelectorAll('.header-cta, .action-chip, .sf-btn').forEach(function (el) {
+    el.classList.add('gs', 'gs-static');
+    var dark = el.classList.contains('sf-btn') || surfaceIsDark(el);
+    el.classList.add(dark ? 'on-dark' : 'on-light');
+  });
+
+  var items = document.querySelectorAll('.swipe-cta, .gs-swipe');
+  if (!items.length) return;
+  // show the little "slide" nudge once each button scrolls into view
+  if ('IntersectionObserver' in window) {
+    var nio = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('idle-nudge'); nio.unobserve(e.target); } });
+    }, { threshold: 0.6 });
+    document.querySelectorAll('.gs-swipe').forEach(function (b) { nio.observe(b); });
+  }
+  var COMPLETE_AT = 0.8, DRAG_THRESHOLD = 6;
+
+  items.forEach(function (el) {
+    var knob = el.querySelector('.sw-knob') || el.querySelector('.g-knob');
+    var fill = el.querySelector('.sw-fill');
     if (!knob || !fill) return;
-    let startX = 0, dx = 0, max = 0, active = false, dragged = false, pid = null;
+    var vert = knob.classList.contains('g-knob');           // g-knob is centred with translateY(-50%)
+    var link = el.closest('a') || el;
+    var startX = 0, dx = 0, max = 0, active = false, dragged = false, pid = null, programmatic = false;
 
     function setPos(x) {
-      knob.style.transform = 'translateX(' + x + 'px)';
-      fill.style.width = (x + knob.offsetWidth + 5) + 'px';
+      knob.style.transform = (vert ? 'translateY(-50%) ' : '') + 'translateX(' + x + 'px)';
+      fill.style.width = (x + knob.offsetWidth + 6) + 'px';
     }
     function reset() {
-      el.classList.add('snap');
-      setPos(0);
-      fill.style.width = '0px';
-      setTimeout(() => el.classList.remove('snap'), 380);
+      el.classList.add('snap'); setPos(0); fill.style.width = '0px';
+      setTimeout(function () { el.classList.remove('snap'); knob.style.transform = ''; }, 380);
     }
     function complete() {
-      el.classList.add('snap', 'done');
-      setPos(max);
+      el.classList.add('snap', 'done'); setPos(max);
       if (navigator.vibrate) { try { navigator.vibrate(18); } catch (e) {} }
-      if (typeof trackConv === 'function') trackConv(CONV_WHATSAPP); // swipe skips the click listener
-      window.open(el.href, '_blank', 'noopener');
-      setTimeout(() => { el.classList.remove('done'); reset(); }, 1400);
+      programmatic = true;
+      try { el.click(); } finally { programmatic = false; }   // 'dragged' stays true so the native click that follows pointerup is swallowed   // real click: link / submit / tracking all run once
+      setTimeout(function () { el.classList.remove('done'); reset(); }, 1400);
     }
 
-    // anchors are natively draggable - that would cancel the swipe mid-way
     el.setAttribute('draggable', 'false');
-    el.addEventListener('dragstart', (e) => e.preventDefault());
+    el.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
-    knob.addEventListener('pointerdown', (e) => {
+    knob.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      e.preventDefault();
+      e.preventDefault(); e.stopPropagation();
       el.classList.remove('idle-nudge', 'snap');
-      active = true; dragged = false; dx = 0;
-      startX = e.clientX;
-      max = el.clientWidth - knob.offsetWidth - 10;
+      knob.style.animation = 'none';
+      active = true; dragged = false; dx = 0; startX = e.clientX;
+      max = el.clientWidth - knob.offsetWidth - 12; if (max < 20) max = 20;
       pid = e.pointerId;
       try { knob.setPointerCapture(pid); } catch (err) {}
       el.classList.add('dragging');
     });
-    knob.addEventListener('pointermove', (e) => {
+    knob.addEventListener('pointermove', function (e) {
       if (!active) return;
       dx = Math.max(0, Math.min(max, e.clientX - startX));
       if (dx > DRAG_THRESHOLD) dragged = true;
@@ -608,18 +677,18 @@ document.addEventListener('click', function (e) {
     });
     function end() {
       if (!active) return;
-      active = false;
-      el.classList.remove('dragging');
+      active = false; el.classList.remove('dragging');
       try { knob.releasePointerCapture(pid); } catch (err) {}
-      if (!dragged) return;              // a plain tap: let the link's click handle it
+      if (!dragged) return;                                  // plain tap on knob: the button's own click handles it
+      setTimeout(function () { dragged = false; }, 450);      // never leave the click-guard armed for the next tap
       if (dx >= max * COMPLETE_AT) complete(); else reset();
     }
     knob.addEventListener('pointerup', end);
-    knob.addEventListener('pointercancel', () => { if (active) { active = false; el.classList.remove('dragging'); reset(); } });
+    knob.addEventListener('pointercancel', function () { if (active) { active = false; el.classList.remove('dragging'); reset(); } });
 
-    // A drag must never also fire the link's click (complete() opens it itself).
-    el.addEventListener('click', (e) => {
-      if (dragged) { e.preventDefault(); dragged = false; }
-    });
+    // a drag must never also fire the button's own click (complete() fires it deliberately)
+    link.addEventListener('click', function (e) {
+      if (dragged && !programmatic) { e.preventDefault(); e.stopPropagation(); dragged = false; }
+    }, true);
   });
 })();
