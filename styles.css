@@ -6751,3 +6751,17 @@ a:hover > .g-hero .g-knob, .g-hero:hover .g-knob { transform: translateY(-50%) t
   .gs-swipe .sw-hint { right: 12px; }
   .gs-swipe.tk-cta .g-txt { flex-wrap: nowrap; gap: .4em; }
 }
+
+/* header pill + sticky footer tiles: original look (no white outline) + a soft moving shine */
+.header-cta, .sf-btn { position: relative; overflow: hidden; }
+.header-cta::after, .sf-btn::after {
+  content: "" !important; position: absolute; top: 0; bottom: 0; left: -60%; width: 32%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.38), transparent);
+  transform: skewX(-18deg); pointer-events: none; z-index: 1;
+  animation: hdrShine 3.6s ease-in-out infinite;
+}
+.sf-btn:nth-child(2)::after { animation-delay: .35s; }
+.sf-btn:nth-child(3)::after { animation-delay: .7s; }
+.sf-btn:nth-child(4)::after { animation-delay: 1.05s; }
+@keyframes hdrShine { 0% { left: -60%; } 55%, 100% { left: 135%; } }
+@media (prefers-reduced-motion: reduce) { .header-cta::after, .sf-btn::after { animation: none; display: none; } }
