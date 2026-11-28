@@ -613,11 +613,10 @@ document.addEventListener('click', function (e) {
     'a.btn:not(.header-cta)', 'button.btn', '.hf-submit', '.pay-cta', '.tk-unlock', '.ln-cta'
   ].join(',');
   document.querySelectorAll(SEL).forEach(build);
-  // header pill + chips + sticky tiles: glass look only (too small to swipe)
-  document.querySelectorAll('.header-cta, .action-chip, .sf-btn').forEach(function (el) {
+  // nav chips: glass look only. Header pill and sticky footer tiles keep their original look + animation.
+  document.querySelectorAll('.action-chip').forEach(function (el) {
     el.classList.add('gs', 'gs-static');
-    var dark = el.classList.contains('sf-btn') || surfaceIsDark(el);
-    el.classList.add(dark ? 'on-dark' : 'on-light');
+    el.classList.add(surfaceIsDark(el) ? 'on-dark' : 'on-light');
   });
 
   var items = document.querySelectorAll('.swipe-cta, .gs-swipe');
