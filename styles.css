@@ -6502,3 +6502,154 @@ section[id], .auto-gallery[id] { scroll-margin-top: 124px; }
 .price-veil .pv-num { filter: blur(5.5px); opacity: .9; padding: 0; }
 .price-veil:hover .pv-num { filter: blur(5px); }
 .price-veil .pv-chip { position: static; transform: none; }
+
+/* ============================ COUPON NUDGE (₹1.5 Lakh) ============================ */
+.cp-nudge { max-width: 352px; padding: 1.55rem 1.4rem 1.15rem; }
+.cp-nudge .ln-head { font-size: 20px; margin-bottom: 1rem; }
+.cp-nudge .ln-head em { font-style: normal; color: var(--gold-deep); }
+.cp-ticket {
+  position: relative;
+  display: grid; grid-template-columns: 44% 56%;
+  margin: 0 0 1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #16427a 0%, #0f2f57 100%);
+  color: #fff;
+  box-shadow: 0 14px 30px -14px rgba(15, 47, 87, 0.6);
+  overflow: hidden;
+  text-align: left;
+}
+/* perforation + notches = coupon, not a banner */
+.cp-ticket::before, .cp-ticket::after {
+  content: ''; position: absolute; left: calc(44% - 9px);
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #fffaf0;
+}
+.cp-ticket::before { top: -9px; }
+.cp-ticket::after { bottom: -9px; }
+.cp-left {
+  padding: 0.95rem 0.6rem 0.95rem 1rem;
+  border-right: 2px dashed rgba(255,255,255,0.28);
+  display: flex; flex-direction: column; justify-content: center;
+}
+.cp-amt { font-family: 'Source Serif 4', serif; font-size: 21px; font-weight: 700; line-height: 1.1; color: #f3d08f; letter-spacing: -0.01em; }
+.cp-off { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; margin-top: 0.2rem; opacity: 0.9; }
+.cp-right { padding: 0.85rem 0.9rem 0.85rem 1rem; display: flex; flex-direction: column; justify-content: center; gap: 0.3rem; }
+.cp-lbl { font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; }
+.cp-code {
+  display: inline-block; align-self: flex-start;
+  padding: 0.28rem 0.55rem; border-radius: 7px;
+  border: 1px dashed rgba(243, 208, 143, 0.7);
+  background: rgba(255,255,255,0.08);
+  font-family: ui-monospace, Menlo, monospace; font-size: 13.5px; letter-spacing: 0.16em;
+}
+.cp-mask { filter: blur(2.2px); opacity: 0.85; user-select: none; }
+.cp-lock { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 10.5px; opacity: 0.85; }
+.cp-lock svg { width: 11px; height: 11px; }
+.cp-ticket { animation: cpIn .45s var(--ease) .12s both; }
+@keyframes cpIn { from { transform: translateY(6px) rotate(-1.2deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .cp-ticket { animation: none; } }
+.cp-nudge .ln-points { margin-bottom: 1rem; padding: 0.65rem 0.85rem; }
+.cp-nudge .ln-fine { line-height: 1.4; }
+@media (max-width: 380px) { .cp-amt { font-size: 18.5px; } .cp-nudge .ln-head { font-size: 18.5px; } }
+
+/* =====================================================================
+   GLASS BUTTON SYSTEM v2 - "thick glass" (reference: hero swipe buttons)
+   Tokens -> sizes -> surfaces -> hero-family knob buttons -> states.
+   Loaded last on purpose so it wins over older per-section rules.
+   ===================================================================== */
+:root {
+  --g-minh: 56px;                 /* every real CTA: never thinner than this */
+  --g-minh-hero: 58px;            /* knob buttons (hero family) */
+  --g-pad: 1rem 1.8rem;
+  --g-font: 15.5px;
+  --g-knob: 46px;
+  --g-depth: inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -10px 18px -12px rgba(0,0,0,0.28);
+}
+@media (max-width: 640px) {
+  :root { --g-minh: 54px; --g-minh-hero: 58px; --g-pad: 0.95rem 1.3rem; --g-font: 15px; --g-knob: 46px; }
+}
+
+/* sizes: all CTAs except nav pills / chips / footer tiles */
+.btn:not(.header-cta), .btn-sm, .pay-cta, .hf-submit, .tk-unlock, .btn.tk-cta, .btn.cab-btn, .ln-cta {
+  min-height: var(--g-minh) !important;
+  padding: var(--g-pad) !important;
+  font-size: var(--g-font) !important;
+  letter-spacing: 0.005em !important;
+  border-width: 1.5px !important;
+}
+/* depth on every glass surface: top highlight + inner bottom shade */
+.btn-glass-brand, .btn-brand, .btn-ink, .ln-cta, .hf-submit, .btn.tk-cta {
+  box-shadow: var(--g-depth), 0 14px 30px -14px rgba(22,66,115,0.6) !important;
+}
+.btn-glass-light, .btn-ghost, .btn-outline-light {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), inset 0 -8px 16px -12px rgba(22,66,115,0.18), 0 10px 24px -16px rgba(22,66,115,0.5) !important;
+}
+.hsc-link, .pay-cta, .tk-unlock, .btn.cab-btn, .signature-card .btn, .prereg-section .btn {
+  box-shadow: var(--g-depth), 0 14px 30px -16px rgba(0,0,0,0.6) !important;
+}
+
+/* ---------- BLUE GLASS variant (on light surfaces) ---------- */
+.g-blue, .btn.g-blue, .ln-cta.g-blue {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 48%),
+    linear-gradient(180deg, rgba(37,110,178,0.80) 0%, rgba(17,60,108,0.88) 100%) !important;
+  border: 1.5px solid rgba(160,214,240,0.75) !important;
+  color: #ffffff !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: var(--g-depth), 0 0 0 4px rgba(79,179,219,0.10), 0 16px 34px -14px rgba(22,80,140,0.62) !important;
+}
+.g-blue:hover, .btn.g-blue:hover, .ln-cta.g-blue:hover {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 50%),
+    linear-gradient(180deg, rgba(46,126,198,0.86) 0%, rgba(20,70,124,0.92) 100%) !important;
+  border-color: rgba(191,232,248,0.95) !important;
+  box-shadow: var(--g-depth), 0 0 0 5px rgba(79,179,219,0.16), 0 20px 38px -14px rgba(22,80,140,0.7) !important;
+  transform: translateY(-2px);
+}
+
+/* ---------- HERO-FAMILY KNOB BUTTONS ---------- */
+.g-hero {
+  position: relative !important;
+  justify-content: center !important;
+  min-height: var(--g-minh-hero) !important;
+  padding: 6px 1.6rem 6px calc(var(--g-knob) + 1.4rem) !important;
+  width: 100%;
+}
+.g-hero .g-knob {
+  position: absolute; left: 6px; top: 50%; transform: translateY(-50%);
+  width: var(--g-knob); height: var(--g-knob); border-radius: 50%;
+  display: grid; place-items: center; z-index: 3;
+  background: linear-gradient(180deg, rgba(255,255,255,0.97), rgba(218,238,250,0.88));
+  color: #164273;
+  box-shadow: 0 4px 12px -4px rgba(0,0,0,0.45), inset 0 1px 0 #fff;
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.g-hero .g-knob svg { width: 20px; height: 20px; }
+.g-hero .g-txt { position: relative; z-index: 2; display: inline-flex; align-items: center; gap: .5em; }
+a:hover > .g-hero .g-knob, .g-hero:hover .g-knob { transform: translateY(-50%) translateX(3px); }
+.g-hero.btn.tk-cta .tk-cta-badge { margin-right: .1em; }
+/* pay-card CTA sits inside a card link - hover follows the card */
+.pay-card:hover .pay-cta.g-hero { border-color: rgba(191,230,245,0.85) !important; }
+
+/* make glass read on white price cards: soft blue floor behind the button */
+.price-card { background: linear-gradient(180deg, #ffffff 0%, #ffffff 52%, #eef5fb 100%) !important; }
+
+/* spacing fixes */
+#payment-plans .bullet-list-note { margin-top: 1.6rem; }
+.text-center > .g-hero { width: auto; min-width: min(100%, 360px); }
+
+/* states */
+.g-hero:active { transform: scale(0.98) !important; }
+.g-hero:focus-visible { outline: 2px solid #4FB3DB !important; outline-offset: 3px; }
+@media (max-width: 640px) {
+  .g-hero, .text-center > .g-hero { width: 100%; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .g-hero .g-knob { transition: none; } }
+/* nav chips: keep pill style, just a comfortable tap target */
+.action-chip { min-height: 42px; }
+.bullet-list-note { margin-top: 1.4rem !important; }
+/* knob buttons must beat the generic .btn:not(...) size rule (higher specificity) */
+.g-hero.g-hero.g-hero {
+  min-height: var(--g-minh-hero) !important;
+  padding: 6px 1.4rem 6px calc(var(--g-knob) + 1.25rem) !important;
+}
