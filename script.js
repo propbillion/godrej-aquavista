@@ -656,35 +656,50 @@ document.addEventListener('click', function (e) {
     }
 
     el.setAttribute('draggable', 'false');
+    link.setAttribute('draggable', 'false');                 // card-anchors are natively draggable and would cancel the swipe
     el.addEventListener('dragstart', function (e) { e.preventDefault(); });
+    link.addEventListener('dragstart', function (e) { e.preventDefault(); });
 
-    knob.addEventListener('pointerdown', function (e) {
+    // gesture works ANYWHERE on the button (not just the knob): press, then pull to the right.
+    // Direction lock: vertical pans stay page scroll (touch-action: pan-y), taps stay clicks.
+    var startY = 0, t0 = 0, captured = false;
+    el.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      e.preventDefault(); e.stopPropagation();
       el.classList.remove('idle-nudge', 'snap');
       knob.style.animation = 'none';
-      active = true; dragged = false; dx = 0; startX = e.clientX;
+      active = true; dragged = false; captured = false; dx = 0;
+      startX = e.clientX; startY = e.clientY; t0 = e.timeStamp; pid = e.pointerId;
       max = el.clientWidth - knob.offsetWidth - 12; if (max < 20) max = 20;
-      pid = e.pointerId;
-      try { knob.setPointerCapture(pid); } catch (err) {}
-      el.classList.add('dragging');
     });
-    knob.addEventListener('pointermove', function (e) {
-      if (!active) return;
-      dx = Math.max(0, Math.min(max, e.clientX - startX));
-      if (dx > DRAG_THRESHOLD) dragged = true;
-      if (dragged) { e.preventDefault(); setPos(dx); }
+    el.addEventListener('pointermove', function (e) {
+      if (!active || e.pointerId !== pid) return;
+      var mx = e.clientX - startX, my = e.clientY - startY;
+      if (!dragged) {
+        if (Math.abs(my) > 10 && Math.abs(my) > Math.abs(mx)) { active = false; return; }   // it is a scroll
+        if (mx < DRAG_THRESHOLD) return;                                                      // not yet a rightward pull
+        dragged = true; captured = true;
+        try { el.setPointerCapture(pid); } catch (err) {}
+        el.classList.add('dragging');
+      }
+      dx = Math.max(0, Math.min(max, mx));
+      e.preventDefault(); setPos(dx);
     });
-    function end() {
+    function end(e) {
       if (!active) return;
       active = false; el.classList.remove('dragging');
-      try { knob.releasePointerCapture(pid); } catch (err) {}
-      if (!dragged) return;                                  // plain tap on knob: the button's own click handles it
+      if (captured) { try { el.releasePointerCapture(pid); } catch (err) {} }
+      if (!dragged) return;                                  // plain tap: the button's own click handles it
       setTimeout(function () { dragged = false; }, 450);      // never leave the click-guard armed for the next tap
-      if (dx >= max * COMPLETE_AT) complete(); else reset();
+      var dt = Math.max(1, (e && e.timeStamp || t0 + 1) - t0), v = dx / dt;   // px per ms
+      // gentle pull is enough: a quarter of the track (max 70px), or a quick flick
+      if (dx >= Math.min(max * 0.25, 70) || (v > 0.45 && dx > 36)) complete(); else reset();
     }
-    knob.addEventListener('pointerup', end);
-    knob.addEventListener('pointercancel', function () { if (active) { active = false; el.classList.remove('dragging'); reset(); } });
+    el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', function () {
+      if (!active) return;
+      active = false; el.classList.remove('dragging');
+      if (dragged) { dragged = false; reset(); }
+    });
 
     // a drag must never also fire the button's own click (complete() fires it deliberately)
     link.addEventListener('click', function (e) {
