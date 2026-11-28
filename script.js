@@ -411,9 +411,14 @@ document.addEventListener('click', function (e) {
   if (!overlay || !card) return;
 
   const STORAGE_KEY = 'avLaunchNudgeShownAt';
-  const INITIAL_DELAY_MS = 0;
-  const RESHOW_DELAY_MS = 15000;
-  const MAX_ATTEMPTS = 3;
+  /* Timing: not instant (lets the hero, price and CTA load and be read first -
+     an instant full-screen modal also hurts landing-page experience), not late:
+     opens at 4s OR at 30% scroll, whichever comes first. One gentle re-show
+     after 40s if closed without acting. Max 2 per session. */
+  const INITIAL_DELAY_MS = 4000;
+  const SCROLL_TRIGGER = 0.30;
+  const RESHOW_DELAY_MS = 40000;
+  const MAX_ATTEMPTS = 2;
 
   /* Show on every fresh visit (like the competitor's on-load modal);
      only suppressed within the same browser tab session after a conversion. */
@@ -480,7 +485,20 @@ document.addEventListener('click', function (e) {
 
   /* Instant: script sits at end of <body>, so the DOM is ready - open now,
      without waiting for images or window load. */
-  if (INITIAL_DELAY_MS > 0) setTimeout(reveal, INITIAL_DELAY_MS); else reveal();
+  let firstShown = false;
+  function firstReveal() {
+    if (firstShown) return;
+    firstShown = true;
+    clearTimeout(firstTimer);
+    window.removeEventListener('scroll', onScrollTrigger);
+    reveal();
+  }
+  function onScrollTrigger() {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    if (max > 0 && (window.scrollY / max) >= SCROLL_TRIGGER) firstReveal();
+  }
+  const firstTimer = setTimeout(firstReveal, INITIAL_DELAY_MS);
+  window.addEventListener('scroll', onScrollTrigger, { passive: true });
 
   const closeBtn = document.getElementById('launchNudgeClose');
   if (closeBtn) closeBtn.addEventListener('click', dismiss);
@@ -491,7 +509,14 @@ document.addEventListener('click', function (e) {
   });
 
   const cta = document.getElementById('launchNudgeCta');
-  if (cta) cta.addEventListener('click', markConverted);
+  if (cta) cta.addEventListener('click', function () {
+    /* Micro-event only (NOT a conversion): tells us the coupon popup drove the
+       WhatsApp click. The WhatsApp conversion itself fires once via the global
+       wa.me listener - so no double counting. A WhatsApp click is an enquiry
+       intent, never a confirmed lead or sale. */
+    if (typeof gtag === 'function') gtag('event', 'coupon_cta_click', { 'event_category': 'popup', 'event_label': 'coupon_1_5L' });
+    markConverted();
+  });
 
   /* Any WhatsApp CTA elsewhere on the page, or submitting the enquiry form,
      is a genuine conversion signal - stop nudging once the visitor has acted. */
